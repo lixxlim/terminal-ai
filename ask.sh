@@ -1,14 +1,10 @@
 #!/bin/bash
+declare -a model_arry
+declare -a user_arry
+
 content=""
 userInput=""
 prompt=">> "
-if ! [[ -v model_arry ]]; then
-    declare -a model_arry
-fi
-if ! [[ -v user_arry ]]; then
-    declare -a user_arry
-fi
-#Input
 if ! [[ -v model ]]; then
         model="gemini-2.0-flash"
 fi
@@ -17,7 +13,7 @@ while true; do
         if [[ "$line" == *"#clear"* ]]; then
                 unset user_arry[@]
                 unset model_arry[@]
-                line=""
+                line=$(echo "$line" | sed 's/#clear//g')
         fi
         if [[ "$line" == *"#flash"* ]]; then
                 model="gemini-2.0-flash"
@@ -50,8 +46,7 @@ for i in $(seq 0 $((${#user_arry[@]} - 1))); do
         fi
 done
 str_len=${#content}
-content="${content:0:str_len-1}]"
-content+="}"
+content="${content:0:str_len-1}]}"
 
 uri="https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}"
 response=$(curl -s -X POST \
@@ -67,22 +62,23 @@ echo ""
 echo -e "\033[93m$(printf "%${COLUMNS}s" | tr ' ' '*')\033[0m"
 if [[ -n "$response" ]]; then
         if echo "$response" | jq -e '.error' > /dev/null 2>&1; then
-                echo "API 에러 발생:" >&2
+                echo "API Error:" >&2
                 cat /tmp/curl_error.log >&2
                 echo "$response" | jq .error  >&2
         elif echo "$response" | jq -e '.candidates' > /dev/null 2>&1; then
                 res=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text' 2>/dev/null)
-                res=$(printf $q "$res")
-                echo -e "\033[93m${res}\033[0m"
-                res=$( echo "$res" | sed 's/\"/\\\"/g' )
-                model_arry+=("$res")
+                echo -e "\033[93m"
+                echo "$res" | pandoc -f markdown -t plain --wrap=none
+                echo -e "\033[0m"
+                response=$( echo "$res" | sed 's/\"/\\\"/g' | sed 's/\*/\\\*/g' )
+                model_arry+=("$response")
         else
-                echo "API 응답 구조 오류: 'candidates' 속성 없음" >&2
-                echo "전체 응답 내용:" >&2
+                echo "API Error: There is no 'candidates'" >&2
+                echo "Response :" >&2
                 echo "$response" | jq . >&2
         fi
 else
-        echo "API 요청 실패 또는 응답 없음 (curl 에러 확인)" >&2
+        echo "API Error: Request fail or No response " >&2
         cat /tmp/curl_error.log >&2
 fi
 rm -f /tmp/curl_error.log
