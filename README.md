@@ -3,7 +3,7 @@
 prepare
 ```bash
 echo "export GOOGLE_AI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" >> ~/.bashrc
-sudo apt-get install jq
+sudo apt-get install jq pandoc
 ```
 
 How to use:
