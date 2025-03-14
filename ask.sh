@@ -28,7 +28,7 @@ while true; do
                 line=$(echo "$line" | sed 's/#think//g')
         fi
         userInput="$userInput$line"$'\n'
-        if [[ "$line" == *";;"* ]]; then
+        if [[ "$line" == *";;" ]]; then
                 userInput=$(echo "$userInput" | sed 's/;;//g')
                 break
         fi

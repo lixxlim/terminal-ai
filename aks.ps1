@@ -45,7 +45,7 @@ function Ask-AI {
 
         $userInput += "$line`n"
 
-        if ($line -match ";;") {
+        if ($line -match ";;$") {
             $userInput = $userInput -replace ";;", ""
             break
         }
